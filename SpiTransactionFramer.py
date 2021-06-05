@@ -6,7 +6,7 @@ class SpiTransactionFramer(HighLevelAnalyzer):
     """
     result_types = {
         "SpiTransaction": {
-            "format": "MISO: {{data.miso}}, MOSI: {{data.mosi}}"
+            "format": "MOSI: {{data.mosi}}, MISO: {{data.miso}}"
         },
         "SpiTransactionError": {
             "format": "ERROR: {{data.error_info}}",
