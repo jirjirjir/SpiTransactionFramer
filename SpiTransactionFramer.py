@@ -6,7 +6,7 @@ class SpiTransactionFramer(HighLevelAnalyzer):
     """
     result_types = {
         "SpiTransaction": {
-            "format": "MOSI: {{data.mosi}}, MISO: {{data.miso}}"
+            "format": "COMMAND: {{data.command}}, MOSI: {{data.mosi}}, MISO: {{data.miso}}"
         },
         "SpiTransactionError": {
             "format": "ERROR: {{data.error_info}}",
@@ -47,15 +47,38 @@ class SpiTransactionFramer(HighLevelAnalyzer):
 
     def get_frame_data(self) -> dict:
         miso = bytearray()
+        mosi_command = str()
         mosi = bytearray()
 
         for frame in self.frames:
             miso += frame.data["miso"]
             mosi += frame.data["mosi"]
+            
+            if frame.data["mosi"] == b'\xc0':
+                mosi_command = "RESET"
+            elif frame.data["mosi"] == b'\xa0':
+                mosi_command = "READ STATUS"
+            elif frame.data["mosi"] == b'\x03':
+                mosi_command = "READ"    
+            elif frame.data["mosi"] == b'\x05':
+                mosi_command = "Bit Modify"  
+            elif frame.data["mosi"] == b'\x02':
+                mosi_command = "WRITE"  
+            elif frame.data["mosi"] == b'\x81':
+                mosi_command = "RTS TXB0" 
+            elif frame.data["mosi"] == b'\x82':
+                mosi_command = "RTS TXB1" 
+            elif frame.data["mosi"] == b'\x84':
+                mosi_command = "RTS TXB2"
+            elif frame.data["mosi"] == b'\x40':
+                mosi_command = "Load TX Buffer" 
+
+        print()
 
         return {
             "miso": bytes(miso),
             "mosi": bytes(mosi),
+            "command": mosi_command,
         }
 
     def handle_disable(self, frame):
